@@ -4,63 +4,41 @@
 
 FItemStructure::FItemStructure()
 {
-    // Basic Properties
-    RegistryKey = NAME_None;
-    ItemQuantity = 1;
-    MaxStackSize = 1;
-    bIsStackable = false;
+    // Initialize Core Properties
     UniqueInstanceID = FGuid::NewGuid();
-
-    // Classification
+    RegistryKey = NAME_None;
+    ItemType = E_ItemType::None;
     ItemCategory = E_ItemCategory::None;
-    ItemType = E_ItemType::Resource;
-    ItemRarity = E_ItemRarity::Common;
+    ItemRarity = E_ItemRarity::None;
 
-    // Equipment Properties
+    // Initialize Stack Properties
+    bIsStackable = false;
+    MaxStackSize = 1;
+    ItemQuantity = 1;
+
+    // Initialize Equipment Properties
     bIsEquippable = false;
     ToolType = E_ToolType::None;
     WeaponType = E_WeaponType::None;
     ArmorType = E_ArmorType::None;
 
-    // Durability
+    // Initialize Durability Properties
+    bHasDurability = false;
     CurrentDurability = 100;
     MaxDurability = 100;
     DurabilityDecayRate = 0.0f;
     bIsDestroyable = true;
 
-    // Ammunition
-    bUsesAmmo = false;
-    CurrentAmmo = 0;
-    MaxAmmo = 0;
+    // Initialize Physical Properties
+    WeightClass = E_WeightClass::None;
 
-    // Consumable Properties
-    bIsConsumable = false;
-    NutritionValue = 0;
-    Toxicity = 0;
-    DecayTime = 0.0f;
-
-    // Physical Properties
-    WeightClass = E_WeightClass::Light;
-    bIsFireSource = false;
-    TemperatureEffect = 0.0f;
-    WarmthRating = 0.0f;
-    bIsFlammable = false;
-    BurnTime = 0.0f;
-
-    // Special Properties
+    // Initialize Special Properties
     bIsQuestItem = false;
     bIsUnique = false;
 
-    // Container Properties
-    bIsContainer = false;
-    ContainerSize = 0;
-
-    // Economic Properties
-    ItemValue = 0;
-
-    // State Properties
-    InitialItemState = E_ItemState::Normal;
-    ItemState = E_ItemState::Normal;
+    // Initialize State Properties
+    InitialItemState = E_ItemState::None;
+    ItemState = E_ItemState::None;
 
     // Initialize Arrays
     DefaultModifiers = TArray<FItemModifier>();
@@ -75,33 +53,17 @@ void FItemStructure::InitializeFromData(const FItemStructure& LoadedItem)
     // Generate new unique ID
     UniqueInstanceID = FGuid::NewGuid();
 
-    // Initialize state
+    // Set current state to initial state
     ItemState = LoadedItem.InitialItemState;
 
     // Copy modifiers
     DefaultModifiers = LoadedItem.DefaultModifiers;
     ItemModifiers = LoadedItem.DefaultModifiers;  // Start with default modifiers
 
-    // Set current values
-    CurrentDurability = MaxDurability;
-    if (bUsesAmmo)
-    {
-        CurrentAmmo = MaxAmmo;
-    }
-
-    // Handle additional initialization based on item type
-    if (bIsEquippable)
+    // Set current values to maximum values for new items
+    if (bHasDurability)
     {
         CurrentDurability = MaxDurability;
-    }
-
-    if (bIsConsumable)
-    {
-        // Initialize decay timer if needed
-        if (DecayTime > 0.0f)
-        {
-            // Set up decay logic here if needed
-        }
     }
 }
 

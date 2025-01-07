@@ -4,12 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
-#include "GameplayTagContainer.h"
 #include "SurvivalGame/Public/Enums/ItemEnums.h"
 #include "ItemStructure.generated.h"
 
+class UItemInfo;
+
 /**
- * @brief Structure representing an item modifier (enchantments, effects, etc.)
+ * @brief Structure representing an item modifier
  */
 USTRUCT(BlueprintType)
 struct FItemModifier
@@ -33,34 +34,37 @@ struct FItemStructure : public FTableRowBase
 {
     GENERATED_BODY()
 
-    /** Basic Properties */
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-    FName RegistryKey;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-    FText ItemName;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-    int32 ItemQuantity;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-    int32 MaxStackSize;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-    bool bIsStackable;
-
-    UPROPERTY(BlueprintReadOnly, Category = "Item")
+    /** Core Properties */
+    UPROPERTY(BlueprintReadOnly, Category = "Core")
     FGuid UniqueInstanceID;
 
-    /** Classification */
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-    E_ItemCategory ItemCategory;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Core")
+    FName RegistryKey;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Core")
+    TSoftObjectPtr<UItemInfo> ItemAsset;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Core")
+    FText ItemName;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Core")
     E_ItemType ItemType;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Core")
+    E_ItemCategory ItemCategory;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Core")
     E_ItemRarity ItemRarity;
+
+    /** Stack Properties */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stack")
+    bool bIsStackable;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stack")
+    int32 MaxStackSize;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stack")
+    int32 ItemQuantity;
 
     /** Equipment Properties */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
@@ -75,7 +79,10 @@ struct FItemStructure : public FTableRowBase
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
     E_ArmorType ArmorType;
 
-    /** Durability */
+    /** Durability Properties */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Durability")
+    bool bHasDurability;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Durability")
     int32 CurrentDurability;
 
@@ -88,78 +95,23 @@ struct FItemStructure : public FTableRowBase
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Durability")
     bool bIsDestroyable;
 
-    /** Ammunition */
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ammunition")
-    bool bUsesAmmo;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ammunition")
-    int32 CurrentAmmo;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ammunition")
-    int32 MaxAmmo;
-
-    /** Consumable Properties */
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Consumable")
-    bool bIsConsumable;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Consumable")
-    int32 NutritionValue;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Consumable")
-    int32 Toxicity;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Consumable")
-    float DecayTime;
-
     /** Physical Properties */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physical")
     E_WeightClass WeightClass;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physical")
-    bool bIsFireSource;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physical")
-    float TemperatureEffect;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physical")
-    float WarmthRating;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physical")
-    bool bIsFlammable;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physical")
-    float BurnTime;
-
     /** Special Properties */
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Special")
-    FString SpecialAbility;
-
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Special")
     bool bIsQuestItem;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Special")
     bool bIsUnique;
 
-    /** Container Properties */
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Container")
-    bool bIsContainer;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Container")
-    int32 ContainerSize;
-
-    /** Tags and Modifiers */
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tags")
-    FGameplayTagContainer ItemTags;
-
+    /** Modifiers */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifiers")
     TArray<FItemModifier> DefaultModifiers;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifiers")
     TArray<FItemModifier> ItemModifiers;
-
-    /** Economic Properties */
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Economic")
-    int32 ItemValue;
 
     /** State Properties */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
@@ -171,20 +123,21 @@ struct FItemStructure : public FTableRowBase
     /** Constructor */
     FItemStructure();
 
-    /** Initialize from template */
+    /** Initialize from another structure */
     void InitializeFromData(const FItemStructure& LoadedItem);
 
-    /** Utility Functions */
+    /** Get current condition as percentage */
     FORCEINLINE float GetConditionPercent() const
     {
         return MaxDurability > 0 ? (float)CurrentDurability / (float)MaxDurability : 1.0f;
     }
 
+    /** Check if item is empty/invalid */
     FORCEINLINE bool IsEmpty() const
     {
         return RegistryKey.IsNone();
     }
 
-    /** Operators */
+    /** Equality operator */
     bool operator==(const FItemStructure& Other) const;
 };

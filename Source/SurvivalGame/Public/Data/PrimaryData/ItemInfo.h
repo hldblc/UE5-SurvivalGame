@@ -4,7 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
-#include "GameplayTagContainer.h"
+#include "Particles/ParticleSystem.h"
+#include "Sound/SoundBase.h"
+#include "Engine/StreamableManager.h"
+#include "Engine/AssetManager.h"
 #include "SurvivalGame/Public/Enums/ItemEnums.h"
 #include "SurvivalGame/Public/Data/Struct/ItemStructure.h"
 #include "ItemInfo.generated.h"
@@ -14,6 +17,8 @@ class USkeletalMesh;
 class USoundBase;
 class UParticleSystem;
 class UTexture2D;
+
+DECLARE_DYNAMIC_DELEGATE(FOnItemAssetsLoadedDelegate);
 
 /**
  * @brief Primary Data Asset for defining static item properties
@@ -26,130 +31,126 @@ class SURVIVALGAME_API UItemInfo : public UPrimaryDataAsset
 
 public:
     UItemInfo();
+
+    /** Core Functions */
     virtual FPrimaryAssetId GetPrimaryAssetId() const override;
+    virtual FName GetRegistryKey() const;
 
     /** Creates a new instance of this item with runtime data */
-    UFUNCTION(BlueprintPure, Category = "Item")
+    UFUNCTION(BlueprintCallable, Category = "Item")
     FItemStructure CreateItemInstance(int32 Quantity = 1) const;
 
-    /** Gets the adjusted value based on condition */
-    UFUNCTION(BlueprintPure, Category = "Item")
-    int32 GetAdjustedValue(float Condition = 1.0f) const;
-
-    /** Checks if entity with given tags can use this item */
-    UFUNCTION(BlueprintPure, Category = "Item")
-    bool CanBeUsedBy(const FGameplayTagContainer& EntityTags) const;
-
-    /** Gets the sell value considering condition */
-    UFUNCTION(BlueprintPure, Category = "Item")
-    int32 GetSellValue(float Condition = 1.0f) const;
+    /** Asset Loading */
+    UFUNCTION(BlueprintCallable, Category = "Item|Assets")
+    void LoadItemAssets(const FOnItemAssetsLoadedDelegate& OnAssetsLoaded);
 
 protected:
-    /** Calculates value modifiers based on properties */
-    float CalculateValueModifiers() const;
+    /** Currently loaded assets */
+    UPROPERTY(Transient)
+    TArray<UObject*> LoadedAssets;
+
+    /** Stored callback for Blueprint asset loading */
+    FOnItemAssetsLoadedDelegate OnItemAssetsLoadedCallback;
+
+    /** Called when assets are finished loading */
+    void OnItemAssetsLoaded();
 
 public:
-    /** Basic Properties */
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Basic", meta = (DisplayName = "Name"))
+    /** Core Properties */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Core")
     FText ItemName;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Basic", meta = (DisplayName = "Description", MultiLine = true))
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Core", meta = (MultiLine = true))
     FText ItemDescription;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Basic", meta = (DisplayName = "Icon"))
-    UTexture2D* ItemIcon;
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Core")
+    E_ItemType ItemType;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Basic", meta = (DisplayName = "Is Stackable"))
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Core")
+    E_ItemCategory ItemCategory;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Core")
+    E_ItemRarity ItemRarity;
+
+    /** Stack Properties */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Stack")
     bool bIsStackable;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Basic", 
-        meta = (EditCondition = "bIsStackable", ClampMin = "1", DisplayName = "Stack Size"))
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Stack", 
+        meta = (EditCondition = "bIsStackable", EditConditionHides, ClampMin = "1"))
     int32 MaxStackSize;
 
     /** Visual Properties */
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Visual", meta = (DisplayName = "Static Mesh"))
-    UStaticMesh* ItemMesh;
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Visual", meta = (AllowedClasses = "Texture2D"))
+    TSoftObjectPtr<UTexture2D> ItemIcon;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Visual", meta = (DisplayName = "Skeletal Mesh"))
-    USkeletalMesh* ItemSkeletalMesh;
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Visual", meta = (AllowedClasses = "StaticMesh"))
+    TSoftObjectPtr<UStaticMesh> ItemMesh;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Visual", meta = (DisplayName = "Particle Effect"))
-    UParticleSystem* ItemParticle;
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Visual", meta = (AllowedClasses = "SkeletalMesh"))
+    TSoftObjectPtr<USkeletalMesh> ItemSkeletalMesh;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Visual", meta = (AllowedClasses = "ParticleSystem"))
+    TSoftObjectPtr<UParticleSystem> ItemParticle;
 
     /** Audio Properties */
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Audio", meta = (DisplayName = "Pickup Sound"))
-    USoundBase* ItemPickupSound;
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Audio", meta = (AllowedClasses = "SoundBase"))
+    TSoftObjectPtr<USoundBase> ItemPickupSound;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Audio", meta = (DisplayName = "Use Sound"))
-    USoundBase* ItemUseSound;
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Audio", meta = (AllowedClasses = "SoundBase"))
+    TSoftObjectPtr<USoundBase> ItemUseSound;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Audio", meta = (DisplayName = "Drop Sound"))
-    USoundBase* ItemDropSound;
-
-    /** Gameplay Properties */
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Gameplay", meta = (DisplayName = "Category"))
-    E_ItemCategory ItemCategory;
-
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Gameplay", meta = (DisplayName = "Type"))
-    E_ItemType ItemType;
-
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Gameplay", meta = (DisplayName = "Rarity"))
-    E_ItemRarity ItemRarity;
-
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Gameplay", meta = (DisplayName = "Weight Class"))
-    E_WeightClass WeightClass;
-
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Gameplay", meta = (DisplayName = "Is Consumable"))
-    bool bIsConsumable;
-
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Gameplay", meta = (DisplayName = "Can Be Equipped"))
-    bool bIsEquippable;
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Audio", meta = (AllowedClasses = "SoundBase"))
+    TSoftObjectPtr<USoundBase> ItemDropSound;
 
     /** Equipment Properties */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Equipment")
+    bool bIsEquippable;
+
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Equipment", 
-        meta = (EditCondition = "bIsEquippable", DisplayName = "Tool Type"))
+        meta = (EditCondition = "bIsEquippable", EditConditionHides))
     E_ToolType ToolType;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Equipment", 
-        meta = (EditCondition = "bIsEquippable", DisplayName = "Weapon Type"))
+        meta = (EditCondition = "bIsEquippable", EditConditionHides))
     E_WeaponType WeaponType;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Equipment", 
-        meta = (EditCondition = "bIsEquippable", DisplayName = "Armor Type"))
+        meta = (EditCondition = "bIsEquippable", EditConditionHides))
     E_ArmorType ArmorType;
 
-    /** Tags and Requirements */
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Tags", meta = (DisplayName = "Item Tags"))
-    FGameplayTagContainer ItemTags;
+    /** Durability Properties */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Durability")
+    bool bHasDurability;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Requirements", meta = (DisplayName = "Required Level"))
-    int32 RequiredLevel;
-
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Requirements", meta = (DisplayName = "Required Tags"))
-    FGameplayTagContainer RequiredTags;
-
-    /** Durability Settings */
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Durability", meta = (DisplayName = "Max Durability"))
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Durability", 
+        meta = (EditCondition = "bHasDurability", EditConditionHides, ClampMin = "1"))
     int32 MaxDurability;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Durability", meta = (DisplayName = "Decay Rate"))
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Durability", 
+        meta = (EditCondition = "bHasDurability", EditConditionHides, ClampMin = "0.0"))
     float DurabilityDecayRate;
 
+    /** Consumable Properties */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Consumable")
+    bool bIsConsumable;
+
+    /** Physical Properties */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Physical")
+    E_WeightClass WeightClass;
+
     /** Economic Properties */
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Economic", meta = (DisplayName = "Base Value"))
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Economic", meta = (ClampMin = "0"))
     int32 BaseValue;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Economic", meta = (DisplayName = "Sell Multiplier"))
-    float SellValueMultiplier;
-
     /** Special Properties */
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Special", meta = (DisplayName = "Is Quest Item"))
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Special")
     bool bIsQuestItem;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Special", meta = (DisplayName = "Is Unique"))
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Special")
     bool bIsUnique;
 
     /** Modifiers */
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Modifiers", meta = (DisplayName = "Default Modifiers"))
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Modifiers")
     TArray<FItemModifier> DefaultModifiers;
 };

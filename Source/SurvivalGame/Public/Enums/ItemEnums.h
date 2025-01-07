@@ -150,7 +150,7 @@ enum class E_ToolType : uint8
     Pickaxe     UMETA(DisplayName = "Pickaxe"),
     Hatchet     UMETA(DisplayName = "Hatchet"),
     Shovel      UMETA(DisplayName = "Shovel"),
-    FishingRod  UMETA(DisplayName = "Fishing Rod")
+    FishingRod  UMETA(DisplayName = "")
 };
 
 /**
