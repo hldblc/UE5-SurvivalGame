@@ -2,7 +2,6 @@
 
 using UnrealBuildTool;
 
-
 public class SurvivalGame : ModuleRules
 {
     public SurvivalGame(ReadOnlyTargetRules Target) : base(Target)
@@ -11,18 +10,26 @@ public class SurvivalGame : ModuleRules
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         bLegacyPublicIncludePaths = false;
 
-        // Add Common UI Path
+        // Update Public Include Paths to reflect new folder structure
         PublicIncludePaths.AddRange(
             new [] {
-                "SurvivalGame/Components",
-                "SurvivalGame/Data",
-                "SurvivalGame/Characters",
-                "SurvivalGame/Enums"
+                "SurvivalGame/Public",
+                "SurvivalGame/Public/Data",
+                "SurvivalGame/Public/Enums",
+                "SurvivalGame/Public/Components",
                 // Add other public include paths here if necessary
             }
         );
 
-        // Removed redundant PrivateIncludePaths since all includes are now in PublicIncludePaths
+        //Add Private Include Paths if you have private headers
+        PrivateIncludePaths.AddRange(
+            new [] { 
+                "SurvivalGame/Private", 
+                "SurvivalGame/Private/Data",
+                "SurvivalGame/Private/Components",
+               // Add other private include paths here if necessary
+            }
+        );
 
         // Public dependencies required for gameplay functionality
         PublicDependencyModuleNames.AddRange(new[]

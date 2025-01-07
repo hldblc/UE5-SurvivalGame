@@ -1,9 +1,18 @@
 // ItemInfo.cpp
 
-#include "ItemInfo.h"
+#include "SurvivalGame/Public/Data/PrimaryData/ItemInfo.h"
 
 UItemInfo::UItemInfo()
 {
+    // Initialize asset references
+    ItemIcon = nullptr;
+    ItemMesh = nullptr;
+    ItemSkeletalMesh = nullptr;
+    ItemParticle = nullptr;
+    ItemPickupSound = nullptr;
+    ItemUseSound = nullptr;
+    ItemDropSound = nullptr;
+
     // Initialize basic properties
     bIsStackable = false;
     MaxStackSize = 1;
@@ -35,7 +44,6 @@ UItemInfo::UItemInfo()
 
 FPrimaryAssetId UItemInfo::GetPrimaryAssetId() const
 {
-    // Use the class name and asset name as the primary asset identifier
     return FPrimaryAssetId(FPrimaryAssetType("Item"), GetFName());
 }
 
@@ -59,6 +67,15 @@ FItemStructure UItemInfo::CreateItemInstance(int32 Quantity) const
     // Set equipment properties
     NewItem.WeightClass = WeightClass;
     NewItem.bIsConsumable = bIsConsumable;
+    NewItem.bIsEquippable = bIsEquippable;
+    
+    // Set tool and weapon types if equippable
+    if (bIsEquippable)
+    {
+        NewItem.ToolType = ToolType;
+        NewItem.WeaponType = WeaponType;
+        NewItem.ArmorType = ArmorType;
+    }
     
     // Set economic properties
     NewItem.ItemValue = BaseValue;
@@ -67,7 +84,8 @@ FItemStructure UItemInfo::CreateItemInstance(int32 Quantity) const
     NewItem.bIsQuestItem = bIsQuestItem;
     NewItem.bIsUnique = bIsUnique;
     
-    // Copy default modifiers
+    // Copy tags and modifiers
+    NewItem.ItemTags = ItemTags;
     NewItem.DefaultModifiers = DefaultModifiers;
     NewItem.ItemModifiers = DefaultModifiers;
     
@@ -83,26 +101,17 @@ FItemStructure UItemInfo::CreateItemInstance(int32 Quantity) const
 
 int32 UItemInfo::GetAdjustedValue(float Condition) const
 {
+    // Ensure condition is within valid range
+    const float ClampedCondition = FMath::Clamp(Condition, 0.0f, 1.0f);
+    
     // Calculate base value with condition modifier
-    float AdjustedValue = BaseValue * FMath::Max(0.1f, Condition);
+    float AdjustedValue = BaseValue * FMath::Max(0.1f, ClampedCondition);
     
     // Apply rarity modifier
-    switch (ItemRarity)
+    const float RarityMultipliers[] = { 1.0f, 1.5f, 2.5f, 4.0f, 8.0f };
+    if (static_cast<int32>(ItemRarity) > 0 && static_cast<int32>(ItemRarity) <= 5)
     {
-        case E_ItemRarity::Uncommon:
-            AdjustedValue *= 1.5f;
-            break;
-        case E_ItemRarity::Rare:
-            AdjustedValue *= 2.5f;
-            break;
-        case E_ItemRarity::Epic:
-            AdjustedValue *= 4.0f;
-            break;
-        case E_ItemRarity::Legendary:
-            AdjustedValue *= 8.0f;
-            break;
-        default:
-            break;
+        AdjustedValue *= RarityMultipliers[static_cast<int32>(ItemRarity) - 1];
     }
     
     // Apply additional modifiers
@@ -114,15 +123,10 @@ int32 UItemInfo::GetAdjustedValue(float Condition) const
 bool UItemInfo::CanBeUsedBy(const FGameplayTagContainer& EntityTags) const
 {
     // If no requirements, anyone can use
-    if (RequiredTags.IsEmpty())
+    if (RequiredTags.IsEmpty() && RequiredLevel <= 1)
     {
         return true;
     }
-    
-    // Check level requirement first
-    // Note: You would typically get the entity's level from a component or interface
-    // This is just a placeholder check
-    // if (EntityLevel < RequiredLevel) return false;
     
     // Check if entity has any required tags
     return EntityTags.HasAny(RequiredTags);
@@ -149,11 +153,26 @@ float UItemInfo::CalculateValueModifiers() const
         Modifier *= 2.0f;
     }
     
+    // Apply equipment type modifiers
+    if (bIsEquippable)
+    {
+        // Weapons and tools are generally more valuable
+        if (WeaponType != E_WeaponType::None || ToolType != E_ToolType::None)
+        {
+            Modifier *= 1.25f;
+        }
+        // Armor value modifier
+        if (ArmorType != E_ArmorType::None)
+        {
+            Modifier *= 1.2f;
+        }
+    }
+    
     // Apply modifiers from DefaultModifiers array
     for (const FItemModifier& ItemMod : DefaultModifiers)
     {
-        // You could add specific modifier calculations here
-        // For example, quality modifiers, special attributes, etc.
+        // Add specific modifier calculations based on modifier type
+        // This can be expanded based on your game's needs
     }
     
     return Modifier;
