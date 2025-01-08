@@ -8,7 +8,7 @@ The **Survival Game Project**, developed using Engine version 5.5 is being dev
 - [Development Roadmap](#development-roadmap)
 - [Prerequisites](#prerequisites)
 - [Installation (Future)](#installation-future)
-- [Contributing](#contributing)
+- [Contribution Guidelines](#contribution-guidelines)
 - [License](#license)
 - [Contact](#contact)
 
@@ -100,24 +100,66 @@ The **Survival Game Project**, developed using Engine version 5.5 is being dev
 
 > **Note**: Detailed installation and build instructions will be provided once we have a functional prototype or a pre-alpha release available.
 
-## Contributing
 
-We welcome contributions from anyone interested in shaping this survival experience!
+# Contribution Guidelines
 
-1. **Fork the project**.
-2. **Create a new branch**:
-    ```bash
-    git checkout -b feature/your-feature-name
-    ```
-3. **Commit your changes**:
-    ```bash
-    git commit -m "Describe your changes"
-    ```
-4. **Push your branch**:
-    ```bash
-    git push origin feature/your-feature-name
-    ```
-5. **Create a Pull Request** to merge your branch into the main branch.
+## Create a New Branch
+
+Use a clear and descriptive name for your branch (e.g., `feature/inventory-system` or `bugfix/fix-locomotion-thread-safety`):
+
+```bash
+git checkout -b feature/my-new-feature
+```
+
+## Make Your Changes
+
+- Implement your feature or bug fix in the appropriate directories (e.g., `Source/`, `Content/`, `Config/`).
+- Adhere to the project’s coding style and best practices.
+- Include comments where necessary for clarity.
+
+## Commit and Push
+
+Write clear commit messages that describe your changes:
+
+```bash
+git commit -m "Add advanced inventory system with stack management"
+```
+
+Push to your fork:
+
+```bash
+git push origin feature/my-new-feature
+```
+
+## Open a Pull Request
+
+1. Go to your fork on GitHub and click “Compare & pull request.”
+2. Provide a descriptive title and explanation of your changes, referencing any related issues or pull requests.
+3. If possible, attach screenshots or GIFs demonstrating your additions or fixes.
+
+## Code Review and Iterations
+
+- Project maintainers will review your Pull Request, suggesting changes or asking for further details if needed.
+- Make any requested updates in your branch, then push them to update the PR.
+
+## Merge
+
+- Once the review is approved, a maintainer will merge your changes into the main branch.
+- Congratulations! You’ve contributed to the Survival Game Project.
+
+## Project Boards and Issues
+
+- Keep an eye on the project’s Issue Tracker and Project Boards for upcoming tasks or known bugs.
+- Feel free to open a new issue if you spot a bug or want to suggest an enhancement.
+
+## Additional Guidelines
+
+- Test your changes thoroughly before submitting a Pull Request.
+- Use descriptive filenames and folder structures that match existing conventions.
+- Document any new classes or functions to help maintain readability.
+
+By following these steps, you’ll ensure a smooth contribution process for yourself and the entire community. We appreciate your interest and look forward to collaborating with you!
+
 
 ## License
 
