@@ -57,6 +57,9 @@ protected:
 
 public:
     /** Core Properties */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Core", meta = (AllowedClasses = "Texture2D"))
+    TSoftObjectPtr<UTexture2D> ItemIcon;
+    
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Core")
     FText ItemName;
 
@@ -81,9 +84,6 @@ public:
     int32 MaxStackSize;
 
     /** Visual Properties */
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Visual", meta = (AllowedClasses = "Texture2D"))
-    TSoftObjectPtr<UTexture2D> ItemIcon;
-
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Visual", meta = (AllowedClasses = "StaticMesh"))
     TSoftObjectPtr<UStaticMesh> ItemMesh;
 

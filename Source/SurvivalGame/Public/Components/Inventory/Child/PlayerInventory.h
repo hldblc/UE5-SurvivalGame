@@ -20,7 +20,11 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnInventoryExpanded, int32, OldSiz
  * - Quick transfers
  * - Level-based item restrictions
  */
-UCLASS(ClassGroup=(Inventory), meta=(BlueprintSpawnableComponent))
+UCLASS(ClassGroup=(Inventory), Blueprintable, BlueprintType, meta=(
+    BlueprintSpawnableComponent, 
+    DisplayName="Player Container Component",
+    Category="Inventory System",
+    ShortTooltip="Player component for handling item storage and management for players"))
 class SURVIVALGAME_API UPlayerInventory : public UItemContainerBase
 {
     GENERATED_BODY()

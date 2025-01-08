@@ -18,7 +18,11 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSlotUpdated, int32, SlotIndex, c
  * in a container like inventory, storage, hotbar etc. Designed for network replication and
  * server authority.
  */
-UCLASS(ClassGroup=(Inventory), meta=(BlueprintSpawnableComponent))
+UCLASS(ClassGroup=(Inventory), Blueprintable, BlueprintType, meta=(
+    BlueprintSpawnableComponent, 
+    DisplayName="Item Container Component",
+    Category="Inventory System",
+    ShortTooltip="Base component for handling item storage and management"))
 class SURVIVALGAME_API UItemContainerBase : public UActorComponent
 {
     GENERATED_BODY()
@@ -41,7 +45,7 @@ protected:
     bool bAllowStacking;
 
     /** Container state */
-    UPROPERTY(ReplicatedUsing = OnRep_Items)
+    UPROPERTY(ReplicatedUsing = OnRep_Items, EditAnywhere, BlueprintReadWrite, Blueprintable, Category = "Item Structure")
     TArray<FItemStructure> Items;
 
     /** Cached owner reference */

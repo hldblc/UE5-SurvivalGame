@@ -112,7 +112,8 @@ FItemStructure UItemInfo::CreateItemInstance(int32 Quantity) const
     FItemStructure NewItem;
 
     // Set Core Properties
-    NewItem.ItemAsset = TSoftObjectPtr<UItemInfo>(this);
+    FSoftObjectPath ItemPath(this);
+    NewItem.ItemAsset = TSoftObjectPtr<UItemInfo>(ItemPath);
     NewItem.RegistryKey = GetRegistryKey();
     NewItem.ItemName = ItemName;
     NewItem.ItemType = ItemType;
@@ -175,9 +176,6 @@ FItemStructure UItemInfo::CreateItemInstance(int32 Quantity) const
     // Set Initial State
     NewItem.InitialItemState = E_ItemState::Normal;
     NewItem.ItemState = E_ItemState::Normal;
-
-    // Generate Unique ID
-    NewItem.UniqueInstanceID = FGuid::NewGuid();
 
     return NewItem;
 }
