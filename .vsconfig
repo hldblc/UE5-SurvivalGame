@@ -10,11 +10,6 @@
     "Microsoft.VisualStudio.Workload.CoreEditor",
     "Microsoft.VisualStudio.Workload.ManagedDesktop",
     "Microsoft.VisualStudio.Workload.NativeDesktop",
-    "Microsoft.VisualStudio.Workload.NativeGame",
-    "Microsoft.VisualStudio.Component.VC.CMake.Project",
-    "Microsoft.VisualStudio.Component.VC.DiagnosticTools",
-    "Microsoft.VisualStudio.Component.DirectX",
-    "Microsoft.VisualStudio.Component.TeamExplorer",
-    "Microsoft.VisualStudio.Component.Git"
+    "Microsoft.VisualStudio.Workload.NativeGame"
   ]
 }
