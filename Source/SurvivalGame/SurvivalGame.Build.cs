@@ -14,9 +14,12 @@ public class SurvivalGame : ModuleRules
         PublicIncludePaths.AddRange(
             new [] {
                 "SurvivalGame/Public",
-                "SurvivalGame/Public/Data",
+                "SurvivalGame/Public/Actors",
                 "SurvivalGame/Public/Enums",
                 "SurvivalGame/Public/Components",
+                "SurvivalGame/Public/Core",
+                "SurvivalGame/Public/Data",
+                "SurvivalGame/Public/Registry"
                 // Add other public include paths here if necessary
             }
         );
@@ -25,8 +28,12 @@ public class SurvivalGame : ModuleRules
         PrivateIncludePaths.AddRange(
             new [] { 
                 "SurvivalGame/Private", 
-                "SurvivalGame/Private/Data",
+                "SurvivalGame/Private/Actors",
                 "SurvivalGame/Private/Components",
+                "SurvivalGame/Private/Core",
+                "SurvivalGame/Private/Data",
+                "SurvivalGame/Private/Registry"
+                
                // Add other private include paths here if necessary
             }
         );
