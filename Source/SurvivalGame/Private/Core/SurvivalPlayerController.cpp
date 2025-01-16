@@ -1,67 +1,78 @@
-// SurvivalPlayerController.cpp
 #include "Core/SurvivalPlayerController.h"
+#include "EnhancedInputComponent.h"
+#include "UI/Widgets/MasterUILayout.h"
+#include "Net/UnrealNetwork.h"
 
 ASurvivalPlayerController::ASurvivalPlayerController()
-	: RootLayout(nullptr)
-	, bAutoEnableUIInput(true)
-	, bLockMouseToViewport(false)
-	, bHideCursorDuringCapture(true)
-	, bIsUIInitialized(false)
-	, bIsLocalController(false)
+    : bInventoryShown(false)
 {
+}
+
+void ASurvivalPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME(ASurvivalPlayerController, bInventoryShown);
 }
 
 void ASurvivalPlayerController::BeginPlay()
 {
-	Super::BeginPlay();
-
-	bIsLocalController = IsLocalController();
-
-	// Only create UI for local players (clients and listen servers)
-	if (!HasAuthority() || IsLocalPlayerController())
-	{
-		InitializeUILayout();
-	}
+    Super::BeginPlay();
 }
 
-void ASurvivalPlayerController::InitializeUILayout()
+void ASurvivalPlayerController::SetupInputComponent()
 {
-	if (!ensureMsgf(MasterUIClass, TEXT("%s: MasterUIClass not set! Please set it in Blueprint."), *GetNameSafe(this)))
-	{
-		return;
-	}
+    Super::SetupInputComponent();
 
-	RootLayout = CreateWidget<UMasterUILayout>(this, MasterUIClass);
-	if (!ensureMsgf(RootLayout, TEXT("%s: Failed to create MasterUILayout widget!"), *GetNameSafe(this)))
-	{
-		return;
-	}
-
-	RootLayout->AddToViewport(0);
-    
-	if (bAutoEnableUIInput)
-	{
-		SetUIInputMode(true);
-	}
-
-	bIsUIInitialized = true;
-	OnUIInitialized.Broadcast();
+    if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent))
+    {
+        EnhancedInputComponent->BindAction(IA_InventoryToggle, ETriggerEvent::Started, 
+            this, &ASurvivalPlayerController::HandleInventoryToggle);
+    }
 }
 
-void ASurvivalPlayerController::SetUIInputMode(bool bUIMode)
+void ASurvivalPlayerController::HandleInventoryToggle(const FInputActionInstance& Instance)
 {
-	if (bUIMode)
-	{
-		FInputModeGameAndUI InputMode;
-		InputMode.SetLockMouseToViewportBehavior(bLockMouseToViewport ? EMouseLockMode::LockOnCapture : EMouseLockMode::DoNotLock);
-		InputMode.SetHideCursorDuringCapture(bHideCursorDuringCapture);
-		SetInputMode(InputMode);
-		bShowMouseCursor = true;
-	}
-	else
-	{
-		FInputModeGameOnly InputMode;
-		SetInputMode(InputMode);
-		bShowMouseCursor = false;
-	}
+    InventoryOnClient();
+}
+
+void ASurvivalPlayerController::InventoryOnClient_Implementation()
+{
+    // Add delay as per SmartPoly's implementation
+    FTimerHandle DelayHandle;
+    GetWorld()->GetTimerManager().SetTimer(DelayHandle, [this]()
+    {
+        if (!bInventoryShown)
+        {
+            if (RootLayout)
+            {
+                RootLayout->PushGameInventoryLayout();
+                UpdateInputMode(true);
+                SetMouseCursorVisibility(true);
+                bInventoryShown = true;
+            }
+        }
+        else
+        {
+            UpdateInputMode(false);
+            SetMouseCursorVisibility(false);
+            bInventoryShown = false;
+        }
+    }, 0.1f, false);
+}
+
+void ASurvivalPlayerController::UpdateInputMode(bool bShowUI)
+{
+    if (bShowUI)
+    {
+        SetInputMode(FInputModeUIOnly());
+    }
+    else
+    {
+        SetInputMode(FInputModeGameOnly());
+    }
+}
+
+void ASurvivalPlayerController::SetMouseCursorVisibility(bool bShow)
+{
+    bShowMouseCursor = bShow;
 }
