@@ -27,6 +27,9 @@ Desktop.ini
 *.iml
 *.ipr
 
+# JetBrains ReSharper / Rider user-specific settings
+*.DotSettings.user
+
 # Visual Studio Code
 .vscode/
 .vscode/**
